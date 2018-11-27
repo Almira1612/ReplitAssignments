@@ -1,3 +1,9 @@
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.naming.CommunicationException;
+
 /**
  * 
  * @author CYBERTEK_SCHOOL
@@ -20,7 +26,13 @@ public class OnlineCTStores {
 	 */
 	public double findItemPrice(String item){
 		//TODO
-		return 0.0;
+		double price = 0.0;
+		for(int i = 0; i< ITEMS.length; i++) {
+			if(ITEMS[i].equals(item)) {
+				price = PRICES[i];
+			}
+		}
+		return price;
 	}
 		
 	
@@ -36,8 +48,15 @@ public class OnlineCTStores {
 	 * @return discount percent based on the items count
 	 */
 	public int discountByItemCount(String[] order, boolean isMember) {
+		
 		//TODO
-		return 0;
+		int discount = 0;
+		if(isMember) {
+			if(order.length > 10) discount = 10;
+		}else {
+			if(order.length > 10) discount = 5;
+		}
+		return discount;
 	}
 /**
  * Method to calculate number of occurrences of a certain item in the order
@@ -54,7 +73,13 @@ public class OnlineCTStores {
  */
 	public int getNumberOfItemOccurrences(String[] order, String itemName){
 		//TODO
-		return 0;
+		int count = 0;
+		for(int i = 0; i <order.length; i++ ) {
+			if(order[i].toLowerCase().equals(itemName.toLowerCase())) {
+				count++;
+			}
+		}
+		return count;
 	}
 	
 	/**
@@ -74,8 +99,20 @@ public class OnlineCTStores {
 	 
 	public int getNumberOfDuplicateItems(String[] order) {
 		//TODO
-	        return 0;
-	    }
+		int count = 0;
+		String currentItem = "";
+		for (int i = 0; i < order.length; i++) {
+			for (int x = 0; x < order.length; x++) {
+				if (order[i].equals(order[x]) && x != i && !(currentItem.contains(order[i]))) {
+					count++;
+					currentItem+=order[x];
+				}
+			}
+
+		}
+		return count;
+
+	}
 
 	/**
 	 * Calculate discount 2 
@@ -99,7 +136,36 @@ public class OnlineCTStores {
 	 */
 		public String[] buyThreeDiscount(String[] order, boolean isMember) {
 			//TODO
-		        return null;
+			 int specItem=0;
+	           String specialItem="";
+
+	           List<String>ret=new ArrayList<String>(Arrays.asList(order));
+	           for(int i=0;i<SPECIAL_ITEMS.length;i++)
+	           {
+	               int hold=getNumberOfItemOccurrences(order, SPECIAL_ITEMS[i]);
+	               if(hold>=3 && isMember)
+	               {
+	                   specItem+=2;
+	                   specialItem=SPECIAL_ITEMS[i];
+	               }
+	               else if(hold>=3 && !isMember)
+	               {
+	                   specItem+=1;
+	                   specialItem=SPECIAL_ITEMS[i];
+	               }
+	           }
+	           if(specItem>0)
+	           {
+	               for(int i=0;i<specItem;i++)
+	               {
+	               ret.add(specialItem);
+	               }
+	           }
+	           String arr[]=new String[ret.size()];
+	           for (int i =0; i < ret.size(); i++)
+	               {arr[i] = ret.get(i);}
+	           return arr;
+			
 		    }	
 	/**
 	 * Calculate total for all items in the order
@@ -114,7 +180,11 @@ public class OnlineCTStores {
 	 */
 	public double getOrderTotalWithoutDiscount(String[] order) {
 		//TODO
-        return 0.0;
+		double total = 0.0;
+		for(int i = 0; i< order.length; i++) {
+			total += findItemPrice(order[i]);
+		}
+		return total;
     }
 
 	/**
@@ -130,7 +200,19 @@ public class OnlineCTStores {
 	 */
 	public int discountByItemPrice(String[] order, boolean isMember) {
 		//TODO
-        return 0;
+		int discount = 0;
+		int count = 0;
+		int countForMember = 0;
+		for(int i = 0; i < order.length; i++) {
+			if(findItemPrice(order[i])>50.00 && isMember) {
+				countForMember++;
+			}else if(findItemPrice(order[i])>75.00 && !isMember){
+				count++;
+			}
+		}
+		if(countForMember >= 2) discount = 18;
+		if(count >= 2) discount = 7;
+        return discount;
 
     }
 	
@@ -145,7 +227,10 @@ public class OnlineCTStores {
 	 */
 	public boolean isShippingFree(String[] order, boolean isMember) {
 		//TODO
-		return false;
+		double total = getOrderTotalWithoutDiscount(order);
+		if(isMember && total > 75.00) return true;
+		else if(!isMember && total > 150.00) return true;
+		else return false;
     }
 
 	
@@ -168,7 +253,23 @@ public class OnlineCTStores {
 	 */
 	public double calculateOrderTotalWithDiscountsAndShipping(String[] order, boolean isMember){
 		//TODO
-		return 0.0;
+		double total = getOrderTotalWithoutDiscount(order);
+		int discountCount = discountByItemCount(order, isMember);
+		int discountPrice = discountByItemPrice(order, isMember);		
+		int discount = 0;
+			if(discountCount > discountPrice) {
+				discount = discountCount;
+			}
+		else if(discountCount < discountPrice) {
+			discount = discountPrice;
+		}
+		double shippingFee = 0.0;
+		if(isShippingFree(order, isMember)==false) {
+			shippingFee = SHIPPING_CHARGE;
+		}
+		
+		return total - total * discount /100 + shippingFee;
+
 	    }
 		
 	/**
@@ -177,8 +278,4 @@ public class OnlineCTStores {
 	public void printReceipt(){
 		//TO DO
 	}
-
-
-
-
 }
